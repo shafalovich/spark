@@ -1,0 +1,39 @@
+Task 1.
+Run Hello World
+
+Task 2.
+Try Spark SQL using Spark.
+Read data from CSV file using DataSet, calculate AVG, SUM, MAX
+
+Task 3.
+Load data from multiple sources:
+Customer(customer_id, name, ...), Order(order_id, customer_id, creation_tmst, completion_tmst) - from the DB.
+CustomerActivityLog - from the log/csv file.
+Find find errors(over last 2 weeks) which prevented customers from placing orders, i.e. completion_tmst is NULL and there are errors related to that customer_id
+
+Task 4.
+Order(order_id, customer_id, creation_tmst, completion_tmst)
+OrderItem(item_id, order_id, product_id, qty, promotion_id, cost)
+Product(product_id, category_id)
+
+For each Product Category find top 3 products which produce top revenue.
+
+Task 5.
+Produce large CSV file of call logs(start_timest, from, to, duration, region, position), at least 100 MB. Find top N, lets say 5, who spend more time (sum duration of outgoing calls).
+Compare performance if read this file from Parquet file vs CSV file.
+
+Task 6. Проверка гипотез.
+Имеется список студентов Student (id, firstName, lastName, score)
+Атрибут score является действительным числом. Необходимо проверить гипотозу от том, что значения score распределены нормально(Гауссово распределение).
+
+Подсказки
+1. Для генерации выборки использовать org.apache.spark.mllib.random.RandomRDDs#normalRDD или аналоги
+2. Проверку гипотезы сделать используя
+https://statanaliz.info/metody/proverka-gipotez/174-kriterij-soglasiya-pirsona-khi-kvadrat
+http://medstatistic.ru/theory/hi_kvadrat.html
+или
+https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test
+3. Для проверки гипотез использовать org.apache.spark.mllib.stat.Statistics#chiSqTest
+или
+org.apache.spark.mllib.stat.Statistics#kolmogorovSmirnovTest
+см. https://spark.apache.org/docs/2.2.0/mllib-statistics.html#hypothesis-testing
