@@ -1,6 +1,6 @@
-import org.apache.spark.sql.*;
-import org.apache.spark.sql.expressions.Window;
-import org.apache.spark.sql.expressions.WindowSpec;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -12,8 +12,9 @@ import static org.apache.spark.sql.functions.sum;
 
 public class Task5 {
 
-    public static final String CSV_FILE = "src/main/resources/task5/call_log.csv";
-    public static final String PARQUET_FILE = "src/main/resources/task5/call_log.parquet";
+    public static final String TASK_FOLDER = "src/main/resources/task5";
+    public static final String CSV_FILE = TASK_FOLDER + "/call_log.csv";
+    public static final String PARQUET_FILE = TASK_FOLDER + "/call_log.parquet";
     public static final int LOG_ITEMS_COUNT = 4999999;
     public static final int SUBSCRIBERS_COUNT = 15000;
     public static final int TOP_N_COUNT = 5;
@@ -34,18 +35,26 @@ public class Task5 {
     private static void showTopSubscribers(boolean isCSV){
         System.out.println("Starting calculation...");
         long startTime = System.currentTimeMillis();
+
         Dataset<Row> callLogs = isCSV ?
                 spark.read().option("header", true).csv(CSV_FILE)
                 : spark.read().parquet(PARQUET_FILE);
         long readTime = System.currentTimeMillis();
-        Dataset<Row> groupBySubscriberOrderByTotal = callLogs.groupBy("from").agg(sum("duration").alias("total_duration")).orderBy(desc("total_duration"));
+        Dataset<Row> groupBySubscriberOrderByTotal = callLogs.groupBy("from")
+                .agg(sum("duration").alias("total_duration")).orderBy(desc("total_duration"));
         groupBySubscriberOrderByTotal.show(TOP_N_COUNT);
+
         long endTime = System.currentTimeMillis();
         System.out.println(String.format("%s: Read time: %d; Total time: %d",isCSV?"CSV":"PARQUET",readTime-startTime, endTime - startTime));
         spark.sqlContext().clearCache();
     }
 
     private static void createFiles() throws IOException {
+        File folder = new File(TASK_FOLDER);
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
+
         FileWriter fileWriter = new FileWriter(CSV_FILE);
         PrintWriter printWriter = new PrintWriter(fileWriter);
         printWriter.println("start_timest,from,to,duration,region,position");
@@ -60,14 +69,14 @@ public class Task5 {
         }
         printWriter.close();
 
-        File folder = new File(PARQUET_FILE);
-        if (folder.exists()) {
-            String[] entries = folder.list();
+        File parquetFolder = new File(PARQUET_FILE);
+        if (parquetFolder.exists()) {
+            String[] entries = parquetFolder.list();
             for(String s: entries){
-                File currentFile = new File(folder.getPath(),s);
+                File currentFile = new File(parquetFolder.getPath(), s);
                 currentFile.delete();
             }
-            folder.delete();
+            parquetFolder.delete();
         }
         Dataset<Row> data = spark.read().option("header", true).csv(CSV_FILE);
         data.write().parquet(PARQUET_FILE);

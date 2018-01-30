@@ -2,18 +2,19 @@ import org.apache.spark.sql.*;
 import org.apache.spark.sql.expressions.Window;
 import org.apache.spark.sql.expressions.WindowSpec;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
 import static org.apache.spark.sql.functions.desc;
-import static org.apache.spark.sql.functions.initcap;
 import static org.apache.spark.sql.functions.sum;
 
 public class Task4 {
 
-    public static final String ORDER_ITEMS_FILE = "src/main/resources/task4/order_items.csv";
-    public static final String PRODUCTS_FILE = "src/main/resources/task4/products.csv";
+    public static final String TASK_FOLDER = "src/main/resources/task4";
+    public static final String ORDER_ITEMS_FILE = TASK_FOLDER + "/order_items.csv";
+    public static final String PRODUCTS_FILE = TASK_FOLDER + "/products.csv";
     public static final int PRODUCTS_COUNT = 5000;
     public static final int CATEGORIES_COUNT = 20;
     public static final int ORDER_ITEMS_COUNT = 500000;
@@ -42,13 +43,18 @@ public class Task4 {
         Dataset<Row> topRevenueProducts = productOrders.withColumn("rank", functions.rank().over(categoryPartitionsSortedByPrice)).where("rank <= " + TOP_N_PRODUCTS);
 
         long endTime = System.currentTimeMillis();
-        topRevenueProducts.show(TOP_N_PRODUCTS * CATEGORIES_COUNT);
+        topRevenueProducts.show(TOP_N_PRODUCTS * CATEGORIES_COUNT + 2);
         System.out.println("Total time: " + (endTime - startTime));
 
         spark.close();
     }
 
     private static void createFiles() throws IOException {
+        File folder = new File(TASK_FOLDER);
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
+
         FileWriter fileWriter = new FileWriter(ORDER_ITEMS_FILE);
         PrintWriter printWriter = new PrintWriter(fileWriter);
         printWriter.println("item_id,order_id,product_id,qty,promotion_id,cost");

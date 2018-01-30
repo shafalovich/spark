@@ -8,6 +8,7 @@ import org.apache.spark.mllib.stat.test.ChiSqTestResult;
 import org.apache.spark.mllib.stat.test.KolmogorovSmirnovTestResult;
 import org.apache.spark.sql.*;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -17,13 +18,14 @@ import static org.apache.spark.mllib.random.RandomRDDs.normalJavaRDD;
 
 public class Task6 {
 
-    public static final String FILE_PATH = "src/main/resources/task6/students.csv";
+    public static final String TASK_FOLDER = "src/main/resources/task6";
+    public static final String FILE_PATH = TASK_FOLDER + "/students.csv";
     public static final double MIN_SCORE = 0.0;
     public static final double MAX_SCORE = 10.0;
-    public static final double MEAN = (MAX_SCORE - MIN_SCORE) / 2;
-    public static final double VARIANCE = Math.pow((MAX_SCORE - MIN_SCORE)/6, 2);// M+-3S = [0, 10], i.e. 6S=10=>S=5/3 =>D=S^2=25/9
     public static final double INTERVAL = 0.1;
-    public static final int STUDENTS_COUNT = 999999;
+    public static final int STUDENTS_COUNT = 9999999;
+    public static final double MEAN = (MAX_SCORE - MIN_SCORE) / 2;
+    public static final double VARIANCE = Math.pow((MAX_SCORE - MIN_SCORE) / 6, 2);// M+-3S = [0, 10], i.e. 6S=10=>S=5/3 =>D=S^2=25/9
     public static final int INTERVALS_COUNT = (int)((MAX_SCORE - MIN_SCORE) / INTERVAL);
     public static int realStudentsCount;
 
@@ -79,6 +81,11 @@ public class Task6 {
     }
 
     private static int generateFile() throws IOException{
+        File folder = new File(TASK_FOLDER);
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
+
         FileWriter fileWriter = new FileWriter(FILE_PATH);
         PrintWriter printWriter = new PrintWriter(fileWriter);
         printWriter.println("id,first_name,last_name,score");
